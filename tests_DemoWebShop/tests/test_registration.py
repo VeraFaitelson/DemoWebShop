@@ -1,7 +1,12 @@
+import uuid
 import time
+
+from models.user import User
 from pages.registration_page import RegistrationPage
 
-VALID_EMAIL = f"testveraf{int(time.time())}@gmail.com"
+VALID_EMAIL_FOR_REG = f"testveraf{int(time.time())}@gmail.com"
+VALID_EMAIL = "testvera_valid@gmail.com"
+ALREADY_EXIST_EMAIL = "testvera@gmail.com"
 VALID_PASSWORD = "Vera!123456789@"
 VALID_NAME = "Vera"
 VALID_LAST_NAME = "V"
@@ -23,15 +28,11 @@ INVALID_PASSWORD3 = ""
 #   на странице отображается кнопка Выйти (Log out).
 def test_valid_registration_success(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, VALID_EMAIL_FOR_REG, VALID_PASSWORD)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(VALID_EMAIL)
-    registration_page.fill_password_field(VALID_PASSWORD)
-    registration_page.fill_confirm_password_field(VALID_PASSWORD)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     assert registration_page.is_log_out_displayed()
-
 
 # Сценарий 2: Неудачная регистрация из-за некорректного формата Email
 # Проверка клиентской валидации текстовых полей ввода на этапе заполнения формы.
@@ -44,29 +45,21 @@ def test_valid_registration_success(driver):
 #   Прямо под полем ввода Email (Email) мгновенно появляется сообщение об ошибке формата: «Wrong email»
 def test_registration_with_wrong_email1(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, INVALID_EMAIL1, VALID_PASSWORD)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(INVALID_EMAIL1)
-    registration_page.fill_password_field(VALID_PASSWORD)
-    registration_page.fill_confirm_password_field(VALID_PASSWORD)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     email_error = registration_page.get_email_error_text()
-    expected_error = "Wrong email"
-    assert email_error == expected_error
+    assert email_error == "Wrong email"
 
 def test_registration_with_wrong_email2(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, INVALID_EMAIL2, VALID_PASSWORD)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(INVALID_EMAIL2)
-    registration_page.fill_password_field(VALID_PASSWORD)
-    registration_page.fill_confirm_password_field(VALID_PASSWORD)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     email_error = registration_page.get_email_error_text()
-    expected_error = "Wrong email"
-    assert email_error == expected_error
+    assert email_error == "Wrong email"
 
 
 # Сценарий 3: Неудачная регистрация из-за пустого поля EMAIL
@@ -80,16 +73,12 @@ def test_registration_with_wrong_email2(driver):
 #     появляется точечное сообщение об ошибке: «Email is required.»
 def test_registration_with_wrong_email3(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, INVALID_EMAIL3, VALID_PASSWORD)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(INVALID_EMAIL3)
-    registration_page.fill_password_field(VALID_PASSWORD)
-    registration_page.fill_confirm_password_field(VALID_PASSWORD)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     email_error = registration_page.get_email_error_text()
     assert email_error == "Email is required."
-
 
 # Сценарий 4: Неудачная регистрация из-за неверных данных поля PASSWORD
 # Проверка вывода сообщений об ошибках при отправке некорректных параметров пароля.
@@ -103,25 +92,18 @@ def test_registration_with_wrong_email3(driver):
 # об ошибке валидации формата: «The password should have at least 6 characters.»
 def test_registration_with_wrong_password1(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, VALID_EMAIL, INVALID_PASSWORD1)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(f"test{int(time.time())}@gmail.com")
-    registration_page.fill_password_field(INVALID_PASSWORD1)
-    registration_page.fill_confirm_password_field(INVALID_PASSWORD1)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     password_error = registration_page.get_email_error_text()
     assert password_error == "The password should have at least 6 characters."
 
-
 def test_registration_with_wrong_password2(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, VALID_EMAIL, INVALID_PASSWORD2)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(f"test{int(time.time())}@gmail.com")
-    registration_page.fill_password_field(INVALID_PASSWORD2)
-    registration_page.fill_confirm_password_field(INVALID_PASSWORD2)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     password_error = registration_page.get_email_error_text()
     assert password_error == "The password should have at least 6 characters."
@@ -137,12 +119,30 @@ def test_registration_with_wrong_password2(driver):
 # появляется сообщение «Password is required.».
 def test_registration_with_wrong_password3(driver):
     registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, VALID_EMAIL, INVALID_PASSWORD3)
     registration_page.open_registration_page()
-    registration_page.fill_name_field(VALID_NAME)
-    registration_page.fill_lastname_field(VALID_LAST_NAME)
-    registration_page.fill_email_field(f"test{int(time.time())}@gmail.com")
-    registration_page.fill_password_field(INVALID_PASSWORD3)
-    registration_page.fill_confirm_password_field(INVALID_PASSWORD3)
+    registration_page.fill_registration_form(user)
     registration_page.click_on_registration_button()
     password_error = registration_page.get_email_error_text()
     assert "Password is required." in password_error
+
+# Сценарий 6: Неудачная регистрация с уже существующим Email
+# Проверка серверной валидации уникальности почтового адреса при повторной регистрации.
+# • Тест 6: test_registration_with_already_exist_email
+# • Шаги: Заполнить все поля формы корректными данными:
+# Имя (First Name), Фамилия (Last Name),
+#   Пароль (Password) и Подтверждение пароля (Confirm Password).
+#   В поле Email (Email) ввести
+#   уже зарегистрированный в системе адрес («testvera@gmail.com»)
+#   и нажать кнопку Регистрация (Register).
+# • Ожидаемый результат: Пользователь не регистрируется.
+# В верхней части формы появляется
+#   сообщение об ошибке: «The specified email already exists».
+def test_registration_with_already_exist_email(driver):
+    registration_page = RegistrationPage(driver)
+    user = User(VALID_NAME, VALID_LAST_NAME, ALREADY_EXIST_EMAIL, VALID_PASSWORD)
+    registration_page.open_registration_page()
+    registration_page.fill_registration_form(user)
+    registration_page.click_on_registration_button()
+    error_text = registration_page.get_already_exist_error_text()
+    assert error_text == "The specified email already exists"

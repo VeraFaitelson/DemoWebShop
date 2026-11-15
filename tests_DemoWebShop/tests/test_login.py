@@ -1,3 +1,4 @@
+from models.user import User
 from pages.login_page import LoginPage
 
 VALID_EMAIL = "testvera@gmail.com"
@@ -19,12 +20,11 @@ INVALID_PASSWORD3 = ""
 #   на странице отображается кнопка «Log out».
 def test_valid_login_success(driver):
     login_page = LoginPage(driver)
+    user = User(email=VALID_EMAIL, password=VALID_PASSWORD)
     login_page.open_login_page()
-    login_page.fill_email_field(VALID_EMAIL)
-    login_page.fill_password_field(VALID_PASSWORD)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     assert login_page.is_log_out_displayed()
-
 
 # Сценарий 2: Неудачная авторизация из-за некорректного формата Email
 # Проверка валидации полей ввода на этапе заполнения формы.
@@ -41,9 +41,9 @@ def test_valid_login_success(driver):
 
 def test_with_wrong_email1(driver):
     login_page = LoginPage(driver)
+    user = User(email=INVALID_EMAIL1, password=VALID_PASSWORD)
     login_page.open_login_page()
-    login_page.fill_email_field(INVALID_EMAIL1)
-    login_page.fill_password_field(VALID_PASSWORD)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     email_error = login_page.get_email_error_text()
     expected_error = "Please enter a valid email address."
@@ -51,15 +51,13 @@ def test_with_wrong_email1(driver):
 
 def test_with_wrong_email2(driver):
     login_page = LoginPage(driver)
+    user = User(email=INVALID_EMAIL2, password=VALID_PASSWORD)
     login_page.open_login_page()
-    login_page.fill_email_field(INVALID_EMAIL2)
-    login_page.fill_password_field(VALID_PASSWORD)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     email_error = login_page.get_email_error_text()
     expected_error = "Please enter a valid email address."
     assert email_error == expected_error
-
-
 
 # Сценарий 3: Неудачная авторизация из-за пустого поля EMAIL
 # Проверка серверных ошибок при отправке незаполненных данных.
@@ -73,9 +71,9 @@ def test_with_wrong_email2(driver):
 
 def test_with_wrong_email3(driver):
     login_page = LoginPage(driver)
+    user = User(email=INVALID_EMAIL3, password=VALID_PASSWORD)
     login_page.open_login_page()
-    login_page.fill_email_field(INVALID_EMAIL3)
-    login_page.fill_password_field(VALID_PASSWORD)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     main_error = login_page.get_main_error_text()
     expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
@@ -107,9 +105,9 @@ def test_with_wrong_email3(driver):
 
 def test_with_wrong_password1(driver):
     login_page = LoginPage(driver)
+    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD1)
     login_page.open_login_page()
-    login_page.fill_email_field(VALID_EMAIL)
-    login_page.fill_password_field(INVALID_PASSWORD1)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     main_error = login_page.get_main_error_text()
     expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
@@ -120,9 +118,9 @@ def test_with_wrong_password1(driver):
 
 def test_with_wrong_password2(driver):
     login_page = LoginPage(driver)
+    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD2)
     login_page.open_login_page()
-    login_page.fill_email_field(VALID_EMAIL)
-    login_page.fill_password_field(INVALID_PASSWORD2)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     main_error = login_page.get_main_error_text()
     expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
@@ -144,9 +142,9 @@ def test_with_wrong_password2(driver):
 
 def test_with_wrong_password3(driver):
     login_page = LoginPage(driver)
+    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD3)
     login_page.open_login_page()
-    login_page.fill_email_field(VALID_EMAIL)
-    login_page.fill_password_field(INVALID_PASSWORD3)
+    login_page.fill_login_form(user)
     login_page.click_on_login_button()
     main_error = login_page.get_main_error_text()
     expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
