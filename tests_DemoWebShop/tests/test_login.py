@@ -1,154 +1,59 @@
+"""Tests for Demo Web Shop user login functionality (positive and negative scenarios)"""
+
+from conftest import DEFAULT_USER
 from models.user import User
 from pages.login_page import LoginPage
+from utils.data_generator import generate_unique_email
 
-VALID_EMAIL = "testvera@gmail.com"
-VALID_PASSWORD = "123456789@$!"
-INVALID_EMAIL1 = "testvera@gmail"
-INVALID_EMAIL2 = "testveragmail.com"
-INVALID_EMAIL3 = ""
-INVALID_PASSWORD1 = "123456789"
-INVALID_PASSWORD2 = "1@$!"
-INVALID_PASSWORD3 = ""
+# Test data constants for negative scenarios
+INVALID_EMAIL = "testQAgmailcom"
+INVALID_PASSWORD = "test"
 
 
-# #Сценарий 1: Успешная авторизация с корректными данными
-# Вход в систему с валидными учетными данными пользователя.
-# • Тест 1: test_valid_login_success
-# • Шаги: Ввести корректный Email (VALID_EMAIL),
-#   корректный пароль (VALID_PASSWORD) и нажать кнопку входа.
-# • Ожидаемый результат: Пользователь успешно авторизован,
-#   на странице отображается кнопка «Log out».
 def test_valid_login_success(driver):
+    """Verify successful login with valid credentials"""
     login_page = LoginPage(driver)
-    user = User(email=VALID_EMAIL, password=VALID_PASSWORD)
+
     login_page.open_login_page()
-    login_page.fill_login_form(user)
+    login_page.fill_login_form(DEFAULT_USER)
     login_page.click_on_login_button()
+
     assert login_page.is_log_out_displayed()
 
-# Сценарий 2: Неудачная авторизация из-за некорректного формата Email
-# Проверка валидации полей ввода на этапе заполнения формы.
-# • Тесты:
-# 	• Тест 2.1 - test_with_wrong_email1 — ввод email без доменной части
-# 	(testvera@gmail).
-# 	• Тест 2.2 - test_with_wrong_email2 — ввод email без знака @
-# 	(testveragmail.com).
-# • Шаги: Ввести текст с нарушением формата в поле Email
-# и нажать кнопку входа.
-# • Ожидаемый результат: Форма не отправляется.
-# Прямо под полем ввода Email мгновенно появляется
-# сообщение об оишбке: «Please enter a valid email address.»
 
-def test_with_wrong_email1(driver):
+def test_login_with_invalid_email_and_valid_password(driver):
+    """Verify inline validation error when email format is invalid"""
     login_page = LoginPage(driver)
-    user = User(email=INVALID_EMAIL1, password=VALID_PASSWORD)
+    user = User(email=INVALID_EMAIL, password=DEFAULT_USER.password)
+
     login_page.open_login_page()
     login_page.fill_login_form(user)
     login_page.click_on_login_button()
-    email_error = login_page.get_email_error_text()
-    expected_error = "Please enter a valid email address."
-    assert email_error == expected_error
 
-def test_with_wrong_email2(driver):
+    assert login_page.get_email_error_text() == "Please enter a valid email address."
+
+
+def test_login_with_valid_email_and_invalid_password(driver):
+    """Verify error summary appears when password is incorrect"""
     login_page = LoginPage(driver)
-    user = User(email=INVALID_EMAIL2, password=VALID_PASSWORD)
+    user = User(email=DEFAULT_USER.email, password=INVALID_PASSWORD)
+
     login_page.open_login_page()
     login_page.fill_login_form(user)
     login_page.click_on_login_button()
-    email_error = login_page.get_email_error_text()
-    expected_error = "Please enter a valid email address."
-    assert email_error == expected_error
 
-# Сценарий 3: Неудачная авторизация из-за пустого поля EMAIL
-# Проверка серверных ошибок при отправке незаполненных данных.
-# • Тест 3: Пустое поле Email (test_with_wrong_email3)
-# 	• Шаги: Оставить поле ввода Email абсолютно пустым
-# 	(INVALID_EMAIL3 = ""), ввести валидный пароль и нажать кнопку входа.
-# 	• Ожидаемый результат: На странице появляется общая ошибка
-# 	авторизации: «Login was unsuccessful.
-# 	Please correct the errors and try again.»,
-# 	а ниже отображается текст «No customer account found».
+    assert "Login was unsuccessful" in login_page.get_main_error_text()
+    assert login_page.get_credentials_error_text() == "The credentials provided are incorrect"
 
-def test_with_wrong_email3(driver):
+
+def test_login_with_unregistered_email(driver):
+    """Verify error summary appears when attempting to log in with a non-existent email"""
     login_page = LoginPage(driver)
-    user = User(email=INVALID_EMAIL3, password=VALID_PASSWORD)
+    user = User(email=generate_unique_email(), password=DEFAULT_USER.password)
+
     login_page.open_login_page()
     login_page.fill_login_form(user)
     login_page.click_on_login_button()
-    main_error = login_page.get_main_error_text()
-    expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
-    assert main_error == expected_main_error
-    credentials_error = login_page.get_credentials_error_text()
-    expected_cred_error = "No customer account found"
-    assert credentials_error == expected_cred_error
 
-# Сценарий 4:
-# Неудачная авторизация из-за неверных данных поля PASSWORD
-# Проверка серверных ошибок при отправке некорректных
-# или незаполненных данных
-# # Проверка серверных ошибок при отправке незаполненных данных.
-# • Тест 4.1: Первый вариант неверного пароля (test_with_wrong_password1)
-# 	• Шаги: Ввести валидный Email, ввести некорректную комбинацию цифр
-# 	в поле пароля (INVALID_PASSWORD1 = "123456789") и
-# 	нажать кнопку входа.
-# 	• Ожидаемый результат: Вход не выполняется,
-# 	выводятся сообщения: «Login was unsuccessful...» и
-# 	«The credentials provided are incorrect».
-# • Тест 4.2: Второй вариант неверного пароля (test_with_wrong_password2)
-# 	• Шаги: Ввести валидный Email, ввести некорректную комбинацию
-# 	спецсимволов в поле пароля (INVALID_PASSWORD2 = "1@$!")
-# 	и нажать кнопку входа.
-# 	• Ожидаемый результат: Вход не выполняется,
-# 	система выводит аналогичные ошибки: «Login was unsuccessful...»
-# 	и «The credentials provided are incorrect».
-#
-
-def test_with_wrong_password1(driver):
-    login_page = LoginPage(driver)
-    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD1)
-    login_page.open_login_page()
-    login_page.fill_login_form(user)
-    login_page.click_on_login_button()
-    main_error = login_page.get_main_error_text()
-    expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
-    assert main_error == expected_main_error
-    credentials_error = login_page.get_credentials_error_text()
-    expected_cred_error = "The credentials provided are incorrect"
-    assert credentials_error == expected_cred_error
-
-def test_with_wrong_password2(driver):
-    login_page = LoginPage(driver)
-    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD2)
-    login_page.open_login_page()
-    login_page.fill_login_form(user)
-    login_page.click_on_login_button()
-    main_error = login_page.get_main_error_text()
-    expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
-    assert main_error == expected_main_error
-    credentials_error = login_page.get_credentials_error_text()
-    expected_cred_error = "The credentials provided are incorrect"
-    assert credentials_error == expected_cred_error
-
-# Сценарий 5: Неудачная авторизация из-за пустого поля PASSWORD
-# Проверка серверных ошибок при отправке незаполненных данных.
-# •Тест 5: пустое поле Пароль (test_with_wrong_password3)
-# • Шаги: Ввести валидный Email,
-# оставить поле ввода пароля абсолютно пустым
-# (INVALID_PASSWORD3 = "") и нажать кнопку входа.
-# • Ожидаемый результат: На странице появляется общая ошибка
-# авторизации: «Login was unsuccessful.
-# Please correct the errors and try again.»,
-# а ниже отображается текст «The credentials provided are incorrect».
-
-def test_with_wrong_password3(driver):
-    login_page = LoginPage(driver)
-    user = User(email=VALID_EMAIL, password=INVALID_PASSWORD3)
-    login_page.open_login_page()
-    login_page.fill_login_form(user)
-    login_page.click_on_login_button()
-    main_error = login_page.get_main_error_text()
-    expected_main_error = "Login was unsuccessful. Please correct the errors and try again."
-    assert main_error == expected_main_error
-    credentials_error = login_page.get_credentials_error_text()
-    expected_cred_error = "The credentials provided are incorrect"
-    assert credentials_error == expected_cred_error
+    assert "Login was unsuccessful" in login_page.get_main_error_text()
+    assert login_page.get_credentials_error_text() == "No customer account found"

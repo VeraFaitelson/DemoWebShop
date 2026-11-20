@@ -1,10 +1,13 @@
-class User:
-    #зададим пустые значения для универсальности использования класса
-    #как при регистрации, так и при логине
-    def __init__(self, name="", lastname="", email="",
-                 password=""):
-        self.name = name
-        self.lastname = lastname
-        self.email = email
-        self.password = password
+"""User data model for Demo Web Shop authorization and registration"""
 
+from dataclasses import dataclass
+
+
+@dataclass
+class User:
+    """Data model representing a customer entity"""
+
+    name: str = ""
+    lastname: str = ""
+    email: str = ""
+    password: str = ""
