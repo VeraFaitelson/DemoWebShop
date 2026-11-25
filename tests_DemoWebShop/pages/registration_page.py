@@ -1,9 +1,12 @@
 """Page Object for the Demo Web Shop Registration page"""
+import logging
 
 from selenium.webdriver.common.by import By
 
 from models.user import User
 from pages.base_page import BasePage
+
+logger = logging.getLogger(__name__)
 
 
 class RegistrationPage(BasePage):
@@ -22,6 +25,7 @@ class RegistrationPage(BasePage):
 
     def open_registration_page(self):
         """Navigates to the Registration page"""
+        logger.info("Opening Registration page")
         self.click(self.REGISTER_LINK)
         self.find(self.NAME_INPUT)
 
@@ -39,14 +43,16 @@ class RegistrationPage(BasePage):
 
     def fill_password_field(self, password: str):
         """Enters password into the Password field"""
-        self.fill(self.PASSWORD_INPUT, password)
+        self.fill(self.PASSWORD_INPUT, password, mask=True)
 
     def fill_confirm_password_field(self, confirm_password: str):
         """Enters password confirmation into the Confirm Password field"""
-        self.fill(self.CONFIRM_PASSWORD_INPUT, confirm_password)
+        self.fill(self.CONFIRM_PASSWORD_INPUT, confirm_password, mask=True)
 
     def fill_registration_form(self, user: User):
         """Fills all required fields of the registration form using a User model"""
+        logger.info("Filling registration form for user: %s", user.email)
+        logger.debug("Registration user data: %s", user)
         self.fill_name_field(user.name)
         self.fill_lastname_field(user.lastname)
         self.fill_email_field(user.email)

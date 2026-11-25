@@ -1,9 +1,12 @@
 """Page Object for the Demo Web Shop Login page"""
+import logging
 
 from selenium.webdriver.common.by import By
 
 from models.user import User
 from pages.base_page import BasePage
+
+logger = logging.getLogger(__name__)
 
 
 class LoginPage(BasePage):
@@ -20,6 +23,7 @@ class LoginPage(BasePage):
 
     def open_login_page(self):
         """Navigates to the Login page"""
+        logger.info("Opening Login page")
         self.click(self.LOGIN_LINK)
         self.find(self.EMAIL_INPUT)
 
@@ -29,10 +33,11 @@ class LoginPage(BasePage):
 
     def fill_password_field(self, password: str):
         """Enters password into the Password field"""
-        self.fill(self.PASSWORD_INPUT, password)
+        self.fill(self.PASSWORD_INPUT, password, mask=True)
 
     def fill_login_form(self, user: User):
         """Fills both email and password fields using a User model"""
+        logger.info("Filling login form for user: %s", user.email)
         self.fill_email_field(user.email)
         self.fill_password_field(user.password)
 

@@ -1,9 +1,12 @@
 """Page Object for the Demo Web Shop catalog and shopping cart"""
+import logging
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
+
+logger = logging.getLogger(__name__)
 
 
 class ShopPage(BasePage):
@@ -22,16 +25,20 @@ class ShopPage(BasePage):
 
     def add_laptop_to_cart(self):
         """Adds '14.1-inch Laptop' to the shopping cart and waits for confirmation"""
+        logger.info("Adding '14.1-inch Laptop' to shopping cart")
         self.click(self.LAPTOP_ADD_TO_CART_BUTTON)
-        self.find(self.NOTIFICATION_BAR)
+        notification_text = self.find(self.NOTIFICATION_BAR).text
+        logger.debug("Notification bar displayed: '%s'", notification_text)
 
     def open_shopping_cart(self):
         """Clicks the 'shopping cart' link inside the notification bar to open the cart"""
+        logger.info("Opening shopping cart from notification bar")
         self.click(self.NOTIFICATION_CART_LINK)
         self.wait.until(EC.url_contains("/cart"))
 
     def proceed_to_checkout(self):
         """Agrees to the terms of service and clicks the Checkout button"""
+        logger.info("Accepting terms of service and proceeding to checkout")
         self.click(self.TERMS_OF_SERVICE_CHECKBOX)
         self.click(self.CHECKOUT_BUTTON)
         self.wait.until(EC.url_contains("/onepagecheckout"))

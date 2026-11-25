@@ -1,9 +1,12 @@
 """Page Object for the Demo Web Shop One-Page Checkout process"""
+import logging
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
 from pages.base_page import BasePage
+
+logger = logging.getLogger(__name__)
 
 
 class CheckoutPage(BasePage):
@@ -30,41 +33,51 @@ class CheckoutPage(BasePage):
     def complete_billing_address(self):
         """Fills billing address if required (first order) and proceeds to the next step"""
         if self.is_visible(self.COUNTRY_SELECT, timeout=2):
+            logger.debug("Step 1: billing address form is empty; filling new address (Country: Israel)")
             Select(self.find(self.COUNTRY_SELECT)).select_by_visible_text("Israel")
             self.fill(self.CITY_INPUT, "Haifa")
             self.fill(self.ADDRESS1_INPUT, "Herzl Street 10")
             self.fill(self.ZIP_INPUT, "3300000")
             self.fill(self.PHONE_INPUT, "0501234567")
+        else:
+            logger.debug("Step 1: using existing saved billing address")
         self.click(self.BILLING_CONTINUE_BUTTON)
 
     def complete_shipping_address(self):
         """Confirms the default shipping address and proceeds"""
+        logger.debug("Step 2: Confirming shipping address")
         self.click(self.SHIPPING_CONTINUE_BUTTON)
 
     def complete_shipping_method(self):
         """Confirms the default shipping method and proceeds"""
+        logger.debug("Step 3: Confirming shipping method")
         self.click(self.SHIPPING_METHOD_CONTINUE_BUTTON)
 
     def complete_payment_method(self):
         """Confirms the default payment method (Cash On Delivery) and proceeds"""
+        logger.debug("Step 4: Confirming payment method")
         self.click(self.PAYMENT_METHOD_CONTINUE_BUTTON)
 
     def complete_payment_info(self):
         """Confirms the payment information step and proceeds"""
+        logger.debug("Step 5: Confirming payment info")
         self.click(self.PAYMENT_INFO_CONTINUE_BUTTON)
 
     def confirm_order(self):
         """Clicks the final 'Confirm' button to place the order"""
+        logger.debug("Step 6: Clicking final Confirm Order button")
         self.click(self.CONFIRM_ORDER_BUTTON)
 
     def complete_checkout_steps(self):
         """Executes all checkout steps sequentially from billing address to order confirmation"""
+        logger.info("Completing one-page checkout steps")
         self.complete_billing_address()
         self.complete_shipping_address()
         self.complete_shipping_method()
         self.complete_payment_method()
         self.complete_payment_info()
         self.confirm_order()
+        logger.info("Checkout steps submitted")
 
     def get_order_success_message(self) -> str:
         """Returns the confirmation text displayed after a successful order"""
